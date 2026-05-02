@@ -1,0 +1,285 @@
+<html>
+    <head>
+        <title>Admin Dashboard</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+        <link href="/static/css/admindashstyle.css" rel="stylesheet">
+        {% if messages %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function(){
+                {%for msg in messages%}
+                alert("{{msg}}");
+                {%endfor%}
+            });
+        </script>
+        {% endif %}
+    </head>
+    <body>
+        <div class="dashboard-page">
+            <nav class="navbar">
+                <a class="navbar-icon" href="{% url 'logout_view' %}"> 🏛️ ClassroomSync </a>
+                <div class="nav-links">
+                    <button class="act">Admin Dashboard</button>
+                    <button onclick="scrollToSection('rooms')">Classrooms</button>
+                    <button onclick="openReqForm('Book')">Request</button>
+                    <form action="{%url 'logout_view' %}" method ="post">
+                        {% csrf_token %}
+                        <button class="logout" type="submit">Logout</button>
+                    </form>
+                </div>
+            </nav>
+            
+            <main class="container">
+                <section class="section">
+                    <h2 class="section-title"> 🚨 Publish Alert</h2>
+                    <article class="card">
+                        <p class="info-text">A <b>Booking Block</b> alert will prevent students from submitting requests for the specified date and time range. The rooms will appear <strong class="text-purple">purple</strong> (Blocked) on the student view.</p>
+                        <form method="POST" class="form-grid" action="{% url 'add_alert' %}">
+                            {%csrf_token%}
+                            <div class="form-group">
+                                <label>Alert Type</label>
+                                <select id="a-type" name ="type">
+                                <option value="blocked">🚫 Booking Block</option>
+                                <option value="notice">📅 Notice</option>
+                                <option value="info">ℹ️ Information</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="a-title" name="title" placeholder="College Holiday">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="text" id="a-msg" name="message">
+                            </div>
+                        
+                            <div id="block-fields" class="form-grid">
+                                <input type="date" id="a-date" name="date">
+                                <input type="time" id="start" name="alert_start_time">
+                                <input type="time" id="end" name="alert_end_time"">
+                            </div>
+                            <button class="btn primary">Publish Alert</button>
+                        </form>
+                    </article>
+                </section>
+
+                <!--ALERT LIST-->
+                <section class="section">
+                    <h2 class="section-title">📋 Active Alerts</h2>
+                    <div id="admin-alerts" class="alert-list">
+                    {%if alerts%}
+                        {%for a in alerts%}
+                        <div class="alert-card">
+                            <form method="POST" action="{% url 'delete_alert' a.id %}">
+                                {% csrf_token %}
+                                <button type="submit">❌</button>
+                            </form>
+                            <span class="alert-badge badge-{{ a.type }}">{{ a.type|title }}</span>
+                            
+                            <div class="alert-title">Title: {{ a.title }}</div>
+                            <div class="alert-msg">Message: {{ a.message }}</div>
+                            {% if a.alert_date %}
+                                <div class="alert-meta">
+                                    📅 {{ a.alert_date }} | ⏰ {{ a.alert_start_time }} - {{ a.alert_end_time }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert-empty">📭 No active alerts</div>
+                    {% endif %}
+                    </div>
+                </section>
+
+                <!--REQUESTS-->
+                <section class="section">
+                    <h2 class="section-title">📬 Pending Requests</h2>
+                    <article class="card">
+                        <div class="tabs">
+                            <a href="?selected_aim=book&floor={{ selected_floor }}&date={{ sel_date }}&start={{ sel_start }}&end={{ sel_end }}" class="tab {%if selected_aim == 'book' %}active{%endif%}">Booking</a>
+                            <a href="?selected_aim=cancel&floor={{ selected_floor }}&date={{ sel_date }}&start={{ sel_start }}&end={{ sel_end }}" class="tab {%if selected_aim == 'cancel' %}active{%endif%}">Cancellation</a>
+                        </div>
+                        {%if selected_aim == 'book' %}
+                            <div class="alert-list">
+                                {% for req in pending_books %}
+                                <div class="alert-item">
+                                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <strong>{{req.requester}} (UID: {{req.uid}})</strong>
+                                        <span style="background:#f59e0b; color:white; padding:2px 8px; border-radius:4px; font-size: 11px;">Pending</span>
+                                    </div>
+                                    <p style="font-size: 13px; color: #6b5740; margin-bottom: 8px;"> 
+                                        🏫 Room {{ req.room }} | 🏛️ {{ req.dept }} <br>
+                                        📅 {{ req.date }} | 🕐 {{ req.start_time }} - {{ req.end_time }}
+                                    </p>
+                                    <p style="font-size: 12px; font-style: italic; margin-bottom: 10px;">{{req.purpose}}</p>
+                                    <form method="POST" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 8px;">
+                                        {%csrf_token%}
+                                        <input type="hidden" name="req_id" value="{{ req.id }}">
+                                        <button type="submit" name="action" value="Approve" class="btn primary">✅ Approve</button>
+                                        <button type="submit" name="action" value="Reject" class="btn danger">❌ Reject</button>
+                                    </form>
+                                </div>
+                                {% empty %}
+                                    <p> 📭 No pending booking requests. </p>
+                                {% endfor %}
+                            </div>
+
+                        {% elif selected_aim == 'cancel' %}
+                            <div class="alert-list">
+                                {% for req in pending_cancels %}
+                                <div class="alert-item">
+                                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <strong>{{req.requester}} (UID: {{req.uid}})</strong>
+                                        <span style="background:#f59e0b; color:white; padding:2px 8px; border-radius:4px; font-size: 11px;">Pending</span>
+                                    </div>
+                                    <p style="font-size: 13px; color: #6b5740; margin-bottom: 8px;"> 
+                                        🏫 Room {{ req.room }} | 🏛️ {{ req.dept }} <br>
+                                        📅 {{ req.date }} | 🕐 {{ req.start_time }} - {{ req.end_time }}
+                                    </p>
+                                    <p style="font-size: 12px; font-style: italic; margin-bottom: 10px;">{{req.purpose}}</p>
+                                    <form method="POST" action="{% url 'admin_dashboard' %}" style="display: flex; gap: 8px;">
+                                        {%csrf_token%}
+                                        <input type="hidden" name="req_id" value="{{ req.id }}">
+                                        <button type="submit" name="action" value="Approve" class="btn primary">✅ Approve</button>
+                                        <button type="submit" name="action" value="Reject" class="btn danger">❌ Reject</button>
+                                    </form>
+                                </div>
+                                {% empty %}
+                                    <p> 📭 No pending cancellation requests. </p>
+                                {% endfor %}
+                            </div>
+                        {%endif%}
+                    </article>
+                </section>
+
+                <!--MANUAL BOOKING-->
+                <section class="grid-2">
+                    <article class="card">
+                        <h3 class="section-subtitle">⚙️ Manual Booking</h3>
+                        <form id="booking-form-area" class="form" method="POST" action="{%url 'admin_dashboard'%}" 
+                        ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                            {%csrf_token%}
+                            <input type="text" placeholder="Room No." name ="m-room" id="m-room">
+                            <input type="text" placeholder="Applicant Name" name ="m-request" id="m-request">
+                            <select name ="m-dept" id="m-dept">
+                            <option>Commerce</option>
+                            <option>Science</option>
+                            <option>Arts</option>
+                            </select>
+                            <input type="date" id ="m-date" name ="m-date" value="{{ sel_date }}" required>
+                            <div class="row">
+                                <input type="time" id ="m-start" name ="m-start" value="{{ sel_start }}" required>
+                                <input type="time" id ="m-end" name ="m-end" value="{{ sel_end }}" required>
+                            </div>
+                            <div class="btn-group">
+                                <button name ="action" type="submit" value="check" class="btn primary">Check Availability</button>
+                                <button name ="action" type="submit" value="book" class="btn danger">Book Room</button>
+                                <button name ="action" type="submit" value="cancel" class="btn danger">Cancel Booking</button>
+                            </div>
+                        </form>
+                    </article>
+
+                    <!--ROOM OVERVIEW-->
+                    <article class="card">
+                        <h3 class="section-subtitle">🏫 Room Overview</h3>
+                        
+                        <div class="tabs">
+                            {% for f in floors %}
+                                <a href="?floor={{ f }}{% if sel_date %}&date={{ sel_date }}{% endif %}{% if sel_start %}&start={{ sel_start }}{% endif %}{% if sel_end %}&end={{ sel_end }}{% endif %}" 
+                                class="tab {% if f == selected_floor %}active{% endif %}">
+                                    Floor {{ f }}
+                                </a>
+                            {% endfor %}
+                        </div>
+
+                        <div class="rgrid"> 
+                            {% for room in rooms %}
+                                <a href="{% url 'classroom_details' room.room_number %}?date={{ sel_date }}&start={{ sel_start }}&end={{ sel_end }}"    style="text-decoration: none; color: inherit;">
+                                    
+                                    <div class="room-card 
+                                    {% if room.dynamic_status == 'Available' %}avail
+                                    {% elif room.dynamicstatus == 'Blocked' %}blocked
+                                    {% else %}booked{% endif %}"
+                                    draggable = "true"
+                                    ondragstart = "drag(event)"
+                                    data-room="{{room.room_number}}"
+                                    data-status = "{{room.dynamic_status}}"
+                                    data-req="{{ room.book_req }}"
+                                    data-dept="{{ room.book_dept }}"
+                                    data-start="{{ room.book_start }}"
+                                    data-end="{{ room.book_end }}">
+                                        
+                                        <div class="rno">{{ room.room_number }}</div>
+                                        <div class="rlbl">{{ room.dynamic_status }}</div>
+                                        <div class="rdept">Cap: {{ room.capacity }}</div>
+                                        <div class="rtip">Floor {{ room.floor }} | Cap: {{ room.capacity }}</div>
+                                        
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>    
+                    </article>
+                </section>
+            </main>
+        </div>
+        <script>
+            function drag(ev) {
+                const t = ev.target;
+                ev.dataTransfer.setData("room", t.getAttribute("data-room"));
+                ev.dataTransfer.setData("status", t.getAttribute("data-status"));
+                ev.dataTransfer.setData("req", t.getAttribute("data-req"));
+                ev.dataTransfer.setData("dept", t.getAttribute("data-dept"));
+                ev.dataTransfer.setData("start", t.getAttribute("data-start"));
+                ev.dataTransfer.setData("end", t.getAttribute("data-end"));
+            }
+
+            function allowDrop(ev) {
+                ev.preventDefault();
+                document.getElementById("booking-form-area").style.border = "2px dashed #888"; 
+            }
+
+            function dragLeave(ev) {
+                document.getElementById("booking-form-area").style.border = "none";
+            }
+
+            function drop(ev) {
+                ev.preventDefault();
+                document.getElementById("booking-form-area").style.border = "none";
+
+                const roomNo = ev.dataTransfer.getData("room");
+                const status = ev.dataTransfer.getData("status");
+
+                if (roomNo) {
+                    // 1. Always fill the Room Number
+                    fillAndFlash("m-room", roomNo);
+
+                    // 2. If it's a BOOKED room, unpack the rest of the details!
+                    if (status === "Booked") {
+                        fillAndFlash("m-request", ev.dataTransfer.getData("req"));
+                        fillAndFlash("m-dept", ev.dataTransfer.getData("dept"));
+                        fillAndFlash("m-start", ev.dataTransfer.getData("start"));
+                        fillAndFlash("m-end", ev.dataTransfer.getData("end"));
+                        
+                        // Focus the Cancel button so they just have to hit Enter
+                        document.querySelector('button[value="cancel"]').focus();
+                    } else {
+                        // If it's Available, clear the requester/dept so they can type a new one
+                        document.getElementById("m-request").value = "";
+                        // Keep the search times that are already in the boxes
+                        document.querySelector('button[value="book"]').focus();
+                    }
+                }
+            }
+
+            // Helper function to make the inputs flash yellow when auto-filled
+            function fillAndFlash(elementId, value) {
+                const el = document.getElementById(elementId);
+                if (el && value) {
+                    el.value = value;
+                    el.classList.add("input-highlight");
+                    setTimeout(() => el.classList.remove("input-highlight"), 800);
+                }
+            }
+        </script>
+    </body>
+</html>

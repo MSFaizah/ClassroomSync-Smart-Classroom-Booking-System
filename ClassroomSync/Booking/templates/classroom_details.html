@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>Classroom Details</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+        <link href="/static/css/classstyle.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="detail-page">
+            <nav class="navbar">
+                <a class="navbar-icon" href="{% url 'home' %}"> 🏛️ ClassroomSync </a>
+                <div class="navbar-links">
+                    <button onclick="window.history.back();">Back</button>
+                    <button class="logout-btn" onclick="window.location.href='{% url 'home' %}'">Logout</button>
+                </div>
+            </nav>
+            <main class="container">
+                <div class="card">
+                    <h1 id="room-number">{{ room.room_number }}</h1>
+                    <p id="room-floor">Floor {{ room.floor }}</p>
+                    <hr>
+                    
+                    <p>Status: <span id="room-status" class="{{ room.dynamic_status}}">{{ room.dynamic_status|default:"Available"}}</span></p>
+                    
+                    <p>Booked By: <span id="room-dept">
+                        {% if room.book_dept %}{{ room.book_dept }}{% else %} - {% endif %}
+                    </span></p>
+                    
+                    <p>Date: <span id="room-date">
+                        {% if room.book_date %}{{ room.book_date }}{% else %} - {% endif %}
+                    </span></p>
+                    
+                    <p>Time: <span id="room-time">
+                        {% if room.book_start and room.book_end %}
+                            {{ room.book_start }} - {{ room.book_end }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span></p>
+                    
+                    <p>Capacity: <span id="room-capacity">{{ room.capacity }}</span></p>
+                    
+                    <div class="button-group">
+                        <button class="btn secondary" onclick="window.history.back();">Back</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </body>
+</html>

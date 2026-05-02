@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>ClassroomSync-Admin Login</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+        <link href="/static/css/loginstyle.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="login-page">
+            <main class="login-box">
+                <form method="POST">
+                    <div class="login-icon">🛠️</div>
+                    <h2>Admin Login</h2>
+                    <p>Enter your credentials to access the Admin Panel.</p>
+                    {%if error%}
+                        <div class="login-error" style="display:block;">
+                            Please enter both valid username and password.
+                        </div>
+                    {%endif%}
+                    {%csrf_token%} <!-- This token acts as a digital fingerprint for a specific user session -->
+                    <div class="fg">
+                        <label>Username</label>
+                        <input type="text" id="login-user" name="login-user" placeholder="e.g. admin" {%if disabled_fields%}disabled{%endif%}>
+                    </div>
+                    <div class="fg" style="margin-top:14px;">
+                        <label>Password</label>
+                        <input type="password" id="login-pass" name="login-pass" placeholder="••••••••" {%if disabled_fields%}disabled{%endif%}>
+                    </div>
+                    <hr/>
+                    <button class="btn-primary" type="submit" {%if disabled_fields%}disabled{%endif%}>Login to Admin Panel →</button>
+                    <br>
+                </form>
+                <button class="login-back" onclick="window.location.href='{% url 'home' %}'">← Back to Home</button>
+            </main>
+        </div>    
+    </body>
+</html>

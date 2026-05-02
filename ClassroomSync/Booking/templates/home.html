@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>Classroom Sync -  Jai Hind College</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+        <link href="/static/css/homestyle.css" rel="stylesheet">
+    </head>
+    
+    <body>
+        <div class="home-page">
+            <nav class="navbar">
+                <a class="navbar-icon" href="{% url 'home' %}">
+                    🏛️ ClassroomSync
+                </a>
+            </nav>
+
+            <section class="hero-section">
+                <h1 class="hero-title">Reserve a Room.<br><em class="highlight-text">Your Campus, Organized. </em>
+                </h1>
+                <p class="hero-description">Streamlined classroom scheduling for a smarter, more organized campus experience.</p>
+
+                <div class="role-selection">
+                    <!-- STUDENT CARD -->
+                    <div class="role-card student-card" onclick="window.location.href='{% url 'student_dashboard' %}'">
+                        <div class="role-icon">🎓</div>
+                        <div class="role-title">Student / Faculty</div>
+                        <div class="role-description">Check availability, browse classrooms, and submit booking requests.
+                        </div>
+                        <div class="role-action">→</div>
+                    </div>
+
+                    <!-- ADMIN CARD -->
+                    <div class="role-card admin-card" onclick="window.location.href='{% url 'admin_login' %}'">
+                        <div class="role-icon">🛠️</div>
+                        <div class="role-title">Admin Panel</div>
+                        <div class="role-description">
+                        Publish alerts, approve/reject requests, and manage bookings.
+                        </div>
+                        <div class="role-action">→</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>
