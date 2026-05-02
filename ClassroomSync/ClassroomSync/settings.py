@@ -75,7 +75,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'ClassroomSyncDB',
         'USER': 'root',
-        'PASSWORD': 'myswintery',
+        'PASSWORD': 'ABC',
         'HOST': 'localhost',
         'PORT': '3306'
     }
